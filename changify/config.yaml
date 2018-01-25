@@ -1,3 +1,4 @@
+refl: 'SR'
 http-specs: ''
 http-chips: ''
 file-specs: ''
@@ -5,35 +6,35 @@ file-chips: ''
 file-root: ''
 file-specs:
   blue:
-    - 'LC08_SRB2'
-    - 'LE07_SRB1'
-    - 'LT05_SRB1'
-    - 'LT04_SRB1'
+    - 'LC08_{refl}B2'
+    - 'LE07_{refl}B1'
+    - 'LT05_{refl}B1'
+    - 'LT04_{refl}B1'
   green:
-    - 'LC08_SRB3'
-    - 'LE07_SRB2'
-    - 'LT05_SRB2'
-    - 'LT04_SRB2'
+    - 'LC08_{refl}B3'
+    - 'LE07_{refl}B2'
+    - 'LT05_{refl}B2'
+    - 'LT04_{refl}B2'
   red:
-    - 'LC08_SRB4'
-    - 'LE07_SRB3'
-    - 'LT05_SRB3'
-    - 'LT04_SRB3'
+    - 'LC08_{refl}B4'
+    - 'LE07_{refl}B3'
+    - 'LT05_{refl}B3'
+    - 'LT04_{refl}B3'
   nir:
-    - 'LC08_SRB5'
-    - 'LE07_SRB4'
-    - 'LT05_SRB4'
-    - 'LT04_SRB4'
+    - 'LC08_{refl}B5'
+    - 'LE07_{refl}B4'
+    - 'LT05_{refl}B4'
+    - 'LT04_{refl}B4'
   swir1:
-    - 'LC08_SRB6'
-    - 'LE07_SRB5'
-    - 'LT05_SRB5'
-    - 'LT04_SRB5'
+    - 'LC08_{refl}B6'
+    - 'LE07_{refl}B5'
+    - 'LT05_{refl}B5'
+    - 'LT04_{refl}B5'
   swir2:
-    - 'LC08_SRB7'
-    - 'LE07_SRB7'
-    - 'LT05_SRB7'
-    - 'LT04_SRB7'
+    - 'LC08_{refl}B7'
+    - 'LE07_{refl}B7'
+    - 'LT05_{refl}B7'
+    - 'LT04_{refl}B7'
   thermal:
     - 'LC08_BTB10'
     - 'LE07_BTB6'
@@ -44,3 +45,22 @@ file-specs:
     - 'LE07_PIXELQA'
     - 'LT05_PIXELQA'
     - 'LT04_PIXELQA'
+
+conus-extent:
+  xmin: -2565585
+  ymax: 3314805
+  xmax: 2384415
+  ymin: 14805
+alaska-extent:
+  xmin: -851715
+  ymax: 2474325
+  xmax: 1698285
+  ymin: 374325
+hawaii-extent:
+  xmin: -444345
+  ymax: 2168895
+  xmax: 305655
+  ymin: 1718895
+
+conus-tileaff: [-2565585, 150000, 0 , 3314805, 0, -150000]
+conus-chipaff: [-2565585, 3000, 0 , 3314805, 0, -3000]

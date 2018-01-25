@@ -5,7 +5,7 @@ import os
 from collections import namedtuple
 from functools import partial
 from itertools import chain
-from typing import Union, NamedTuple, Tuple
+from typing import Union, NamedTuple, Tuple, Mapping
 
 from osgeo import gdal
 import merlin
@@ -54,22 +54,35 @@ class RowColumnExtent(NamedTuple):
 
 
 # Defined Extents for the ARD data sets
-ARDCONUS_EXT = GeoExtent(-2565585, 3314805, 2384415, 14805)
-ARDAK_EXT = GeoExtent(-851715, 2474325, 1698285, 374325)
-ARDHI_EXT = GeoExtent(-444345, 2168895, 305655, 1718895)
+# ARDCONUS_EXT = GeoExtent(-2565585, 3314805, 2384415, 14805)
+# ARDAK_EXT = GeoExtent(-851715, 2474325, 1698285, 374325)
+# ARDHI_EXT = GeoExtent(-444345, 2168895, 305655, 1718895)
 
 # Defined Affines to help with Transformations
-ARDCONUS_CHIPAFF = (ARDCONUS_EXT[0], 3000, 0, ARDCONUS_EXT[1], 0, -3000)
+# ARDCONUS_CHIPAFF = (ARDCONUS_EXT[0], 3000, 0, ARDCONUS_EXT[1], 0, -3000)
+#
+# ARDCONUS_TILEAFF = (ARDCONUS_EXT[0], 15e4, 0, ARDCONUS_EXT[1], 0, -15e4)
 
-ARDCONUS_TILEAFF = (ARDCONUS_EXT[0], 15e4, 0, ARDCONUS_EXT[1], 0, -15e4)
 
-
-def create(x: Num, y: Num, acquired: str):
+def timeseries(x: Num, y: Num, acquired: str, params: Mapping=Config):
     h, v = determine_hv(GeoCoordinate(x, y))
     pass
 
 
-def ard_hv(h: int, v: int, extent: GeoExtent=ARDCONUS_EXT) -> Tuple[GeoExtent, tuple]:
+def files(path: str, acquired: str) -> filter:
+    func = partial(datefilter, restriction=acquired)
+
+    return filter(func, os.listdir(path))
+
+
+def datefilter(name: str, restriction: str) -> bool:
+    fr, to = restriction.replace('-', '').split('/')
+    acq = name.split('_')[3]
+
+    return fr <= acq <= to
+
+
+def ard_hv(h: int, v: int, extent: GeoExtent) -> Tuple[GeoExtent, tuple]:
     """
     Geospatial extent and 30m affine for a given ARD grid location.
 
@@ -82,7 +95,8 @@ def ard_hv(h: int, v: int, extent: GeoExtent=ARDCONUS_EXT) -> Tuple[GeoExtent, t
         GeoExtent and GeoAffine namedtuples
 
     Examples:
-        >>> ext, aff = ard_hv(5, 2)
+        >>> ardconus = GeoExtent(xmin=-2565585, ymax=3314805, xmax=2384415, ymin=14805)
+        >>> ext, aff = ard_hv(5, 2, ardconus)
         >>> ext
         GeoExtent(xmin=-1815585, ymax=3014805, xmax=-1665585, ymin=2864805)
         >>> aff
@@ -234,7 +248,7 @@ def transform_ext(extent, affine):
     return t(*chain(*map(map_func, split_extent(extent))))
 
 
-def determine_hv(coord: GeoCoordinate, aff: tuple=ARDCONUS_TILEAFF) -> Tuple[int, int]:
+def determine_hv(coord: GeoCoordinate, aff: tuple) -> Tuple[int, int]:
     """
     Determine the ARD tile H/V that contains the given coordinate.
 
@@ -304,35 +318,35 @@ def extract_rcextent(path: str, rc_extent: RowColumnExtent, band: int=1):
                                               lr.row - ul.row)
 
 
-def chipul(coord: GeoCoordinate, aff: tuple=ARDCONUS_CHIPAFF) -> GeoCoordinate:
+def chipul(coord: GeoCoordinate, chip_aff: tuple) -> GeoCoordinate:
     """
     Chip defined as a 100x100 30m pixel area.
 
     Args:
         coord (sequence): (x, y) coordinate pair
-        aff:
+        chip_aff: special affine that determines the bounds of data extraction and processing
 
     Returns:
 
     """
     # Flip it!
-    rc = transform_geo(coord, aff)
-    return transform_rc(rc, aff)
+    rc = transform_geo(coord, chip_aff)
+    return transform_rc(rc, chip_aff)
 
 
-def extract_chip(path: str, coord: GeoCoordinate, band: int=1):
+def extract_chip(path: str, coord: GeoCoordinate, chip_aff: tuple):
     """
     Chip defined as a 100x100 30m pixel area.
 
     Args:
         path:
         coord (sequence): (x, y) coordinate pair
-        band:
+        chip_aff: special affine that determines the bounds of data extraction and processing
 
     Returns:
 
     """
-    chip_ul = chipul(coord)
+    chip_ul = chipul(coord, chip_aff)
     chip_ext = GeoExtent(chip_ul[0], chip_ul[1], chip_ul[0] + 3000, chip_ul[1] - 3000)
 
-    return extract_geoextent(path, chip_ext, band)
+    return extract_geoextent(path, chip_ext)
