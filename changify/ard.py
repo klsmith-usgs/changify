@@ -53,33 +53,69 @@ class RowColumnExtent(NamedTuple):
     end_col: int
 
 
-# Defined Extents for the ARD data sets
-# ARDCONUS_EXT = GeoExtent(-2565585, 3314805, 2384415, 14805)
-# ARDAK_EXT = GeoExtent(-851715, 2474325, 1698285, 374325)
-# ARDHI_EXT = GeoExtent(-444345, 2168895, 305655, 1718895)
-
-# Defined Affines to help with Transformations
-# ARDCONUS_CHIPAFF = (ARDCONUS_EXT[0], 3000, 0, ARDCONUS_EXT[1], 0, -3000)
-#
-# ARDCONUS_TILEAFF = (ARDCONUS_EXT[0], 15e4, 0, ARDCONUS_EXT[1], 0, -15e4)
-
-
-def timeseries(x: Num, y: Num, acquired: str, params: Mapping=Config):
+def timeseries(x: Num, y: Num, acquired: str, params: Mapping):
     h, v = determine_hv(GeoCoordinate(x, y))
     pass
 
 
-def files(path: str, acquired: str) -> filter:
-    func = partial(datefilter, restriction=acquired)
+def files(path: str, acquired: str, params: Mapping) -> filter:
+    func = partial(filter_date, dates=acquired)
 
     return filter(func, os.listdir(path))
 
 
-def datefilter(name: str, restriction: str) -> bool:
-    fr, to = restriction.replace('-', '').split('/')
-    acq = name.split('_')[3]
+def filter_date(filename: str, dates: str) -> bool:
+    """
+    Helper function to filter ARD files based on their acquisition date.
+
+    Args:
+        filename: ARD file name
+        dates: ISO8601 date range
+
+    Returns:
+        bool
+    """
+    fr, to = dates.replace('-', '').split('/')
+    acq = filename.split('_')[3]
 
     return fr <= acq <= to
+
+
+def filter_tar(filename: str, tar: str) -> bool:
+    """
+    Help determine what the particular contents of a ARD tarball is.
+    SR -> surface reflectance
+    TA -> top of atmosphere
+    QA -> quality
+    BT -> brightness temperature
+
+    Args:
+        filename: ARD file name
+        tar: subset of interest
+
+    Returns:
+        bool
+    """
+    return filename.endswith('{}.tar'.format(tar))
+
+
+def filter_reg(filename: str, region: str) -> bool:
+    """
+    Determine which region the file is part of.
+    CU -> CONUS
+    AK -> Alaska
+    HI -> Hawaii
+
+    Args:
+        filename: ARD file name
+        region: region of interest
+
+    Returns:
+        bool
+    """
+    reg = filename.split('_')[1]
+
+    return reg == region
 
 
 def ard_hv(h: int, v: int, extent: GeoExtent) -> Tuple[GeoExtent, tuple]:

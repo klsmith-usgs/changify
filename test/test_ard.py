@@ -12,6 +12,8 @@ tst_file = ('/vsitar'
             '/LT05_CU_005002_19850302_20170711_C01_V01_SR.tar'
             '/LT05_CU_005002_19850302_20170711_C01_V01_SRB3.tif')
 
+tst_filename = tst_file.split('/')[-2]
+
 tst_aff = (-1815585, 30, 0, 3014805, 0, -30)
 tst_coord = ard.GeoCoordinate(-1701195, 3005565)
 tst_rc = ard.RowColumn(308, 3813)
@@ -85,3 +87,19 @@ def test_extract_chip():
 
 def test_determine_hv():
     assert ard.determine_hv(tst_coord, config['conus-tileaff']) == (5, 2)
+
+
+def test_filter_reg():
+    assert ard.filter_reg(tst_filename, 'CU') is True
+    assert ard.filter_reg(tst_filename, 'AK') is False
+
+
+def test_filter_tar():
+    assert ard.filter_tar(tst_filename, 'SR') is True
+    assert ard.filter_tar(tst_filename, 'TA') is False
+
+
+def test_filter_date():
+    assert ard.filter_date(tst_filename, '1984-01-01/1985-03-02') is True
+    assert ard.filter_date(tst_filename, '1985-03-02/1990-01-01') is True
+    assert ard.filter_date(tst_filename, '1985-03-03/1987-01-01') is False
