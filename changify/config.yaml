@@ -1,50 +1,46 @@
 refl: 'SR'
-http-specs: ''
-http-chips: ''
-file-specs: ''
-file-chips: ''
 file-root: ''
 file-specs:
   blue:
-    - 'LC08_{refl}B2'
-    - 'LE07_{refl}B1'
-    - 'LT05_{refl}B1'
-    - 'LT04_{refl}B1'
+    LC08: '{refl}B2.tif'
+    LE07: '{refl}B1.tif'
+    LT05: '{refl}B1.tif'
+    LT04: '{refl}B1.tif'
   green:
-    - 'LC08_{refl}B3'
-    - 'LE07_{refl}B2'
-    - 'LT05_{refl}B2'
-    - 'LT04_{refl}B2'
+    LC08: '{refl}B3.tif'
+    LE07: '{refl}B2.tif'
+    LT05: '{refl}B2.tif'
+    LT04: '{refl}B2.tif'
   red:
-    - 'LC08_{refl}B4'
-    - 'LE07_{refl}B3'
-    - 'LT05_{refl}B3'
-    - 'LT04_{refl}B3'
+    LC08: '{refl}B4.tif'
+    LE07: '{refl}B3.tif'
+    LT05: '{refl}B3.tif'
+    LT04: '{refl}B3.tif'
   nir:
-    - 'LC08_{refl}B5'
-    - 'LE07_{refl}B4'
-    - 'LT05_{refl}B4'
-    - 'LT04_{refl}B4'
+    LC08: '{refl}B5.tif'
+    LE07: '{refl}B4.tif'
+    LT05: '{refl}B4.tif'
+    LT04: '{refl}B4.tif'
   swir1:
-    - 'LC08_{refl}B6'
-    - 'LE07_{refl}B5'
-    - 'LT05_{refl}B5'
-    - 'LT04_{refl}B5'
+    LC08: '{refl}B6.tif'
+    LE07: '{refl}B5.tif'
+    LT05: '{refl}B5.tif'
+    LT04: '{refl}B5.tif'
   swir2:
-    - 'LC08_{refl}B7'
-    - 'LE07_{refl}B7'
-    - 'LT05_{refl}B7'
-    - 'LT04_{refl}B7'
+    LC08: '{refl}B7.tif'
+    LE07: '{refl}B7.tif'
+    LT05: '{refl}B7.tif'
+    LT04: '{refl}B7.tif'
   thermal:
-    - 'LC08_BTB10'
-    - 'LE07_BTB6'
-    - 'LT05_BTB6'
-    - 'LT04_BTB6'
+    LC08: 'BTB10.tif'
+    LE07: 'BTB6.tif'
+    LT05: 'BTB6.tif'
+    LT04: 'BTB6.tif'
   quality:
-    - 'LC08_PIXELQA'
-    - 'LE07_PIXELQA'
-    - 'LT05_PIXELQA'
-    - 'LT04_PIXELQA'
+    LC08: 'PIXELQA.tif'
+    LE07: 'PIXELQA.tif'
+    LT05: 'PIXELQA.tif'
+    LT04: 'PIXELQA.tif'
 
 conus-extent:
   xmin: -2565585
@@ -64,3 +60,5 @@ hawaii-extent:
 
 conus-tileaff: [-2565585, 150000, 0 , 3314805, 0, -150000]
 conus-chipaff: [-2565585, 3000, 0 , 3314805, 0, -3000]
+
+acquired: '1980-01-01/2015-12-31'

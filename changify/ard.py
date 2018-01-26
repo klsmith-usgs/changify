@@ -2,15 +2,12 @@
 ARD related functionality
 """
 import os
-from collections import namedtuple
-from functools import partial
+from functools import partial, lru_cache
 from itertools import chain
 from typing import Union, NamedTuple, Tuple, Mapping
 
 from osgeo import gdal
 import merlin
-
-from changify.app import Config
 
 
 # Typing Jazz
@@ -53,15 +50,45 @@ class RowColumnExtent(NamedTuple):
     end_col: int
 
 
-def timeseries(x: Num, y: Num, acquired: str, params: Mapping):
-    h, v = determine_hv(GeoCoordinate(x, y))
+def timeseries(x: Num, y: Num, params: Mapping):
+    h, v = determine_hv(GeoCoordinate(x, y), params['tileaff'])
+
     pass
 
 
-def files(path: str, acquired: str, params: Mapping) -> filter:
-    func = partial(filter_date, dates=acquired)
+# def filedict(hv_root: str, params: Mapping):
+#     pass
 
-    return filter(func, os.listdir(path))
+
+def vsipath(tarpath: str, band: str, specs: Mapping, refl: str) -> str:
+    # Basically a bunch of string manipulations...
+    tarfile = os.path.split(tarpath)[-1]
+    sensor = tarfile[:4]
+
+    layer = tarfile[:-6] + specs[band][sensor].format(refl)
+
+    path = os.path.join(tarpath, layer)
+
+    return '/vsitar' + path
+
+
+@lru_cache(maxsize=72)
+def tarfiles(path: str, acquired: str, region: str, tar: str) -> list:
+    fs = filters(acquired, region, tar)
+
+    return [x for x in dirlisting(path) if all(f(x) for f in fs)]
+
+
+@lru_cache(maxsize=3)
+def filters(acquired: str, region: str, tar: str) -> list:
+    return [partial(filter_date, dates=acquired),
+            partial(filter_tar, tar=tar),
+            partial(filter_reg, reg=region)]
+
+
+@lru_cache(maxsize=9)
+def dirlisting(path: str) -> list:
+    return os.listdir(path)
 
 
 def filter_date(filename: str, dates: str) -> bool:
@@ -252,7 +279,7 @@ def transform_rc(rowcol: RowColumn, affine: tuple) -> GeoCoordinate:
     return GeoCoordinate(x, y)
 
 
-def split_extent(extent):
+def split_extent(extent: Union[GeoExtent, RowColumnExtent]):
     """
     Helper func
 
@@ -268,7 +295,7 @@ def split_extent(extent):
     return t(extent[0], extent[1]), t(extent[2], extent[3])
 
 
-def transform_ext(extent, affine):
+def transform_ext(extent: Union[GeoExtent, RowColumnExtent], affine: tuple):
     """
 
     """

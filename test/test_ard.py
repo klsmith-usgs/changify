@@ -13,6 +13,7 @@ tst_file = ('/vsitar'
             '/LT05_CU_005002_19850302_20170711_C01_V01_SRB3.tif')
 
 tst_filename = tst_file.split('/')[-2]
+tst_path = r'/test/data'
 
 tst_aff = (-1815585, 30, 0, 3014805, 0, -30)
 tst_coord = ard.GeoCoordinate(-1701195, 3005565)
