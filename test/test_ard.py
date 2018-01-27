@@ -104,3 +104,24 @@ def test_filter_date():
     assert ard.filter_date(tst_filename, '1984-01-01/1985-03-02') is True
     assert ard.filter_date(tst_filename, '1985-03-02/1990-01-01') is True
     assert ard.filter_date(tst_filename, '1985-03-03/1987-01-01') is False
+
+
+def test_vsipath():
+    layer = ard.vsipath(r'test/data/h05v02/LT05_CU_005002_19850302_20170711_C01_V01_BT.tar',
+                        'thermal',
+                        config['file-specs'],
+                        'BT')
+
+    ds = ard.open_raster(layer)
+
+    assert ds is not None
+
+
+def test_tarfiles():
+    files = ard.tarfiles(r'test/data/h05v02',
+                         '1980-01-01/2014-01-01',
+                         'CU',
+                         'SR')
+
+    assert files == ['LE07_CU_005002_19991020_20170712_C01_V01_SR.tar',
+                     'LT05_CU_005002_19850302_20170711_C01_V01_SR.tar']

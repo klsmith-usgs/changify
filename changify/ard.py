@@ -61,19 +61,44 @@ def timeseries(x: Num, y: Num, params: Mapping):
 
 
 def vsipath(tarpath: str, band: str, specs: Mapping, refl: str) -> str:
+    """
+    Build the GDAL VSI path for the layer of interest inside of a given tarball.
+
+    Args:
+        tarpath: path to tarball
+        band: spectral band of interest, blue green red etc...
+        specs: dict identifying the sensor specific spectral to numeric band combinations
+        refl: relates to the type of reflectance values associated with the tarball,
+            'SR' 'TA' 'BT' or '' for pixelqa
+
+    Returns:
+        string GDAL VSI path
+    """
     # Basically a bunch of string manipulations...
     tarfile = os.path.split(tarpath)[-1]
     sensor = tarfile[:4]
 
-    layer = tarfile[:-6] + specs[band][sensor].format(refl)
+    layer = tarfile[:-6] + specs[band][sensor].format(refl=refl)
 
     path = os.path.join(tarpath, layer)
 
-    return '/vsitar' + path
+    return '/vsitar/' + path
 
 
 @lru_cache(maxsize=72)
 def tarfiles(path: str, acquired: str, region: str, tar: str) -> list:
+    """
+    Provide a listing of all tarballs that meet the requirements for processing.
+
+    Args:
+        path: ARD h##v## tile directory
+        acquired: ISO8601 date range
+        region: region of interest, 'CU' 'AK' or 'HI'
+        tar: tarballs of interests, 'SR' 'TA' 'BT' or 'QA'
+
+    Returns:
+        list
+    """
     fs = filters(acquired, region, tar)
 
     return [x for x in dirlisting(path) if all(f(x) for f in fs)]
@@ -81,13 +106,33 @@ def tarfiles(path: str, acquired: str, region: str, tar: str) -> list:
 
 @lru_cache(maxsize=3)
 def filters(acquired: str, region: str, tar: str) -> list:
+    """
+    Sets up the filters when scanning through the ARD data directories.
+
+    Args:
+        acquired: ISO8601 date range
+        region: region of interest, 'CU' 'AK' or 'HI'
+        tar: tarballs of interests, 'SR' 'TA' 'BT' or 'QA'
+
+    Returns:
+        list
+    """
     return [partial(filter_date, dates=acquired),
             partial(filter_tar, tar=tar),
-            partial(filter_reg, reg=region)]
+            partial(filter_reg, region=region)]
 
 
 @lru_cache(maxsize=9)
 def dirlisting(path: str) -> list:
+    """
+    Helper function around os.listdir for caching.
+
+    Args:
+        path: path to pass to os.listdir
+
+    Returns:
+        list
+    """
     return os.listdir(path)
 
 
