@@ -14,9 +14,9 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION gdal
   - source activate test-environment
-  - conda install -c conda-forge gdal
+#  - conda install -c conda-forge gdal
 #  - python setup.py install
 
   - pip install --upgrade pip
