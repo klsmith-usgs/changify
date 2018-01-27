@@ -123,5 +123,5 @@ def test_tarfiles():
                          'CU',
                          'SR')
 
-    assert files == ['LE07_CU_005002_19991020_20170712_C01_V01_SR.tar',
-                     'LT05_CU_005002_19850302_20170711_C01_V01_SR.tar']
+    assert sorted(files) == ['LE07_CU_005002_19991020_20170712_C01_V01_SR.tar',
+                             'LT05_CU_005002_19850302_20170711_C01_V01_SR.tar']
