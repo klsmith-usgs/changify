@@ -50,14 +50,52 @@ class RowColumnExtent(NamedTuple):
     end_col: int
 
 
+class ARDattributes(NamedTuple):
+    """
+    Container for ARD acquisition information derived from the filename.
+    """
+    sensor: str
+    region: str
+    h: int
+    v: int
+    acqdate: int
+    procdate: int
+    collec: str
+    version: str
+    contents: str
+
+
 def timeseries(x: Num, y: Num, params: Mapping):
     h, v = determine_hv(GeoCoordinate(x, y), params['tileaff'])
 
     pass
 
 
-# def filedict(hv_root: str, params: Mapping):
-#     pass
+@lru_cache(maxsize=3)
+def filenameattr(filename: str) -> ARDattributes:
+    """
+    Provide a centralized function for deriving pertinent information from a given filename.
+
+    Args:
+        filename: ARD tarball file name
+
+    Returns:
+        namedtuple
+    """
+
+    attributes = filename[:-4].split('_')
+    h = attributes[2][:3]
+    v = attributes[2][-3:]
+
+    return ARDattributes(attributes[0],
+                         attributes[1],
+                         int(h),
+                         int(v),
+                         int(attributes[3]),
+                         int(attributes[4]),
+                         attributes[5],
+                         attributes[6],
+                         attributes[7])
 
 
 def vsipath(tarpath: str, band: str, specs: Mapping, refl: str) -> str:
@@ -76,7 +114,7 @@ def vsipath(tarpath: str, band: str, specs: Mapping, refl: str) -> str:
     """
     # Basically a bunch of string manipulations...
     tarfile = os.path.split(tarpath)[-1]
-    sensor = tarfile[:4]
+    sensor = filenameattr(tarfile).sensor
 
     layer = tarfile[:-6] + specs[band][sensor].format(refl=refl)
 
@@ -148,9 +186,9 @@ def filter_date(filename: str, dates: str) -> bool:
         bool
     """
     fr, to = dates.replace('-', '').split('/')
-    acq = filename.split('_')[3]
+    acq = filenameattr(filename).acqdate
 
-    return fr <= acq <= to
+    return int(fr) <= acq <= int(to)
 
 
 def filter_tar(filename: str, tar: str) -> bool:
@@ -185,7 +223,7 @@ def filter_reg(filename: str, region: str) -> bool:
     Returns:
         bool
     """
-    reg = filename.split('_')[1]
+    reg = filenameattr(filename).region
 
     return reg == region
 
