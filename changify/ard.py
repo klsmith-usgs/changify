@@ -4,9 +4,10 @@ ARD related functionality
 import os
 from functools import partial, lru_cache
 from itertools import chain
-from typing import Union, NamedTuple, Tuple, Mapping
+from typing import Union, NamedTuple, Tuple
 
 from osgeo import gdal
+import numpy as np
 import merlin
 
 
@@ -64,11 +65,68 @@ class ARDattributes(NamedTuple):
     version: str
     contents: str
 
+# Adapting from merlin
+# def create(x, y, chipseq, dateseq, locations, spec_index):
+#     """Transforms a sequence of chips into a sequence of rods
+#        filtered by date, deduplicated, sorted, located and identified.
+#        Args:
+#            x (int): x projection coordinate of chip
+#            y (int): y projection coordinate of chip
+#            chipseq (seq): sequence of chips
+#            dates (seq): sequence of dates that should be included in the rods
+#            locations (numpy.Array): 2d numpy array of pixel coordinates
+#            spec_index (dict): specs indexed by ubid
+#        Returns:
+#            dict: {(chip_x, chip_y, x, y): {'k1': [], 'k2': [], 'k3': [], ...}}
+#     """
+#
+#     return thread_last(chipseq,
+#                        partial(chips.trim, dates=dateseq),
+#                        chips.deduplicate,
+#                        chips.rsort,
+#                        partial(chips.to_numpy, spec_index=spec_index),
+#                        excepts(ValueError, from_chips, lambda _: []),
+#                        excepts(AttributeError, partial(locate, locations=locations), lambda _: {}),
+#                        partial(identify, x=x, y=y))
 
-def timeseries(x: Num, y: Num, params: Mapping):
-    h, v = determine_hv(GeoCoordinate(x, y), params['tileaff'])
 
-    pass
+def timeseries(x: Num, y: Num, params: dict):
+    coord = GeoCoordinate(x, y)
+    h, v = determine_hv(coord, params['region-tileaff'])
+
+    hvroot = os.path.join(params['file-root'], 'h{:02d}v{:02d}'.format(h, v))
+
+    filesdict = {'refl_files': tarfiles(hvroot, params['acquired'], params['region'], params['refl']),
+                 'therm_files': tarfiles(hvroot, params['acquired'], params['region'], 'BT')}
+
+    layers = layersdict(filesdict, hvroot, params)
+
+    chips = layerstochips(coord, layers, params)
+
+
+def layersdict(files: dict, root, params: dict):
+    ret = {}
+    for layer in params['file-specs']:
+        if layer == 'thermals':
+            ret[layer] = [vsipath(os.path.join(root, rf), layer, params['file-specs'], params['refl'])
+                          for rf in files['therm_files']]
+        else:
+            ret[layer] = [vsipath(os.path.join(root, rf), layer, params['file-specs'], params['refl'])
+                          for rf in files['refl_files']]
+
+    return ret
+
+
+def layerstochips(coord, layers, params):
+    h, v = determine_hv(coord, params['region-tileaff'])
+    _, affine = ard_hv(h, v, params['region-extent'])
+
+    ret = {}
+    for layer in layers:
+        ret[layer] = np.array([extract_chip(path, coord, affine)
+                               for path in layers[layer]])
+
+    return ret
 
 
 @lru_cache(maxsize=3)
@@ -98,7 +156,7 @@ def filenameattr(filename: str) -> ARDattributes:
                          attributes[7])
 
 
-def vsipath(tarpath: str, band: str, specs: Mapping, refl: str) -> str:
+def vsipath(tarpath: str, band: str, specs: dict, refl: str) -> str:
     """
     Build the GDAL VSI path for the layer of interest inside of a given tarball.
 

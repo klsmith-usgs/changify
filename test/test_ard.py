@@ -108,7 +108,7 @@ def test_filter_date():
 
 def test_vsipath():
     layer = ard.vsipath(r'test/data/h05v02/LT05_CU_005002_19850302_20170711_C01_V01_BT.tar',
-                        'thermal',
+                        'thermals',
                         config['file-specs'],
                         'BT')
 
