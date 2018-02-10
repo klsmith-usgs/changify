@@ -32,10 +32,10 @@ file-specs:
     LT05: '{refl}B7.tif'
     LT04: '{refl}B7.tif'
   thermals:
-    LC08: '{refl}B10.tif'
-    LE07: '{refl}B6.tif'
-    LT05: '{refl}B6.tif'
-    LT04: '{refl}B6.tif'
+    LC08: 'BTB10.tif'
+    LE07: 'BTB6.tif'
+    LT05: 'BTB6.tif'
+    LT04: 'BTB6.tif'
   qas:
     LC08: 'PIXELQA.tif'
     LE07: 'PIXELQA.tif'

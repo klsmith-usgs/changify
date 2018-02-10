@@ -5,10 +5,14 @@ import os
 from functools import partial, lru_cache
 from itertools import chain
 from typing import Union, NamedTuple, Tuple
+import logging
 
 from osgeo import gdal
 import numpy as np
 import merlin
+
+
+log = logging.getLogger(__name__)
 
 
 # Typing Jazz
@@ -91,6 +95,11 @@ class ARDattributes(NamedTuple):
 
 
 def timeseries(x: Num, y: Num, params: dict):
+    pass
+
+
+def timechips(x: Num, y: Num, params: dict):
+    log.debug('Building chips for %s %s', x, y)
     coord = GeoCoordinate(x, y)
     h, v = determine_hv(coord, params['region-tileaff'])
 
@@ -102,6 +111,8 @@ def timeseries(x: Num, y: Num, params: dict):
     layers = layersdict(filesdict, hvroot, params)
 
     chips = layerstochips(coord, layers, params)
+
+    return chips
 
 
 def layersdict(files: dict, root, params: dict):
@@ -552,5 +563,7 @@ def extract_chip(path: str, coord: GeoCoordinate, chip_aff: tuple):
     """
     chip_ul = chipul(coord, chip_aff)
     chip_ext = GeoExtent(chip_ul[0], chip_ul[1], chip_ul[0] + 3000, chip_ul[1] - 3000)
+
+    log.debug('Extracting chip %s from layer %s', chip_ext, path)
 
     return extract_geoextent(path, chip_ext)
