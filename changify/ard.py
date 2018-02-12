@@ -9,7 +9,6 @@ import logging
 
 from osgeo import gdal
 import numpy as np
-import merlin
 
 
 log = logging.getLogger(__name__)
@@ -69,30 +68,6 @@ class ARDattributes(NamedTuple):
     version: str
     contents: str
 
-# Adapting from merlin
-# def create(x, y, chipseq, dateseq, locations, spec_index):
-#     """Transforms a sequence of chips into a sequence of rods
-#        filtered by date, deduplicated, sorted, located and identified.
-#        Args:
-#            x (int): x projection coordinate of chip
-#            y (int): y projection coordinate of chip
-#            chipseq (seq): sequence of chips
-#            dates (seq): sequence of dates that should be included in the rods
-#            locations (numpy.Array): 2d numpy array of pixel coordinates
-#            spec_index (dict): specs indexed by ubid
-#        Returns:
-#            dict: {(chip_x, chip_y, x, y): {'k1': [], 'k2': [], 'k3': [], ...}}
-#     """
-#
-#     return thread_last(chipseq,
-#                        partial(chips.trim, dates=dateseq),
-#                        chips.deduplicate,
-#                        chips.rsort,
-#                        partial(chips.to_numpy, spec_index=spec_index),
-#                        excepts(ValueError, from_chips, lambda _: []),
-#                        excepts(AttributeError, partial(locate, locations=locations), lambda _: {}),
-#                        partial(identify, x=x, y=y))
-
 
 def timeseries(x: Num, y: Num, params: dict):
     pass
@@ -113,6 +88,14 @@ def timechips(x: Num, y: Num, params: dict):
     chips = layerstochips(coord, layers, params)
 
     return chips
+
+
+def filedates(filepaths):
+    return [filenameattr(os.path.split(p)[-1]).acqdate for p in filepaths]
+
+
+def datescomp(dates1, dates2):
+    return dates1 == dates2
 
 
 def layersdict(files: dict, root, params: dict):
@@ -140,7 +123,7 @@ def layerstochips(coord, layers, params):
     return ret
 
 
-@lru_cache(maxsize=3)
+@lru_cache(maxsize=3000)
 def filenameattr(filename: str) -> ARDattributes:
     """
     Provide a centralized function for deriving pertinent information from a given filename.
@@ -240,7 +223,15 @@ def dirlisting(path: str) -> list:
     Returns:
         list
     """
-    return os.listdir(path)
+    return list(filter(filter_isobs, os.listdir(path)))
+
+
+def filter_isobs(filename: str) -> bool:
+    try:
+        filenameattr(filename)
+        return True
+    except:
+        return False
 
 
 def filter_date(filename: str, dates: str) -> bool:
@@ -533,6 +524,7 @@ def extract_rcextent(path: str, rc_extent: RowColumnExtent, band: int=1):
                                               lr.row - ul.row)
 
 
+@lru_cache()
 def chipul(coord: GeoCoordinate, chip_aff: tuple) -> GeoCoordinate:
     """
     Chip defined as a 100x100 30m pixel area.
